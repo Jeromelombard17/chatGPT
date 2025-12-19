@@ -14,8 +14,12 @@ npm install
 npm run dev
 ```
 
+Accès local : http://localhost:3000
+
 ## Production
 
 ```bash
 npm run build && npm run start
 ```
+
+Accès production local : http://localhost:3000
