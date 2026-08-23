@@ -582,8 +582,17 @@
       });
     }
 
+    function parseStoredJson(key) {
+      try {
+        return JSON.parse(localStorage.getItem(key) || "{}");
+      } catch {
+        localStorage.removeItem(key);
+        return {};
+      }
+    }
+
     function loadSavedAnswers() {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      const saved = parseStoredJson(STORAGE_KEY);
       Object.entries(saved).forEach(([key, value]) => {
         const input = document.querySelector(`input[name="q${key}"][value="${value}"]`);
         if (input) {
@@ -591,7 +600,7 @@
         }
       });
 
-      const openSaved = JSON.parse(localStorage.getItem(OPEN_STORAGE_KEY) || "{}");
+      const openSaved = parseStoredJson(OPEN_STORAGE_KEY);
       [31, 32, 33].forEach((q) => {
         const field = document.getElementById(`open-${q}`);
         if (field && openSaved[`q${q}`]) {
@@ -611,7 +620,7 @@
       const answers = {};
       document.querySelectorAll(".question").forEach((questionEl) => {
         const qNumber = questionEl.dataset.question;
-        const checked = questionEl.querySelector("input[type=""radio""]:checked");
+        const checked = questionEl.querySelector('input[type="radio"]:checked');
         if (checked) {
           answers[qNumber] = Number(checked.value);
         }
@@ -699,6 +708,20 @@
 
     function renderRadar(dimensionScores) {
       const ctx = document.getElementById("radarChart");
+      if (!ctx) return;
+
+      if (typeof Chart === "undefined") {
+        ctx.hidden = true;
+        if (!document.getElementById("radar-unavailable")) {
+          const notice = document.createElement("p");
+          notice.id = "radar-unavailable";
+          notice.className = "muted";
+          notice.textContent = "Le graphique nécessite une connexion internet, mais les scores et les exports restent disponibles hors connexion.";
+          ctx.insertAdjacentElement("afterend", notice);
+        }
+        return;
+      }
+
       const data = dimensionScores.map((dim) => dim.average);
 
       if (radarChart) {
